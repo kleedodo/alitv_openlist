@@ -21,10 +21,21 @@ FROM alpine:latest
 # 安装ca-certificates（如果你需要访问HTTPS）
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# 创建普通用户和用户组
+RUN addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup -s /bin/sh appuser
+
+# 设置工作目录
+WORKDIR /app
 
 # 从构建阶段复制二进制文件
 COPY --from=builder /app/app .
+
+# 设置文件权限
+RUN chown -R appuser:appgroup /app
+
+# 切换到普通用户
+USER appuser
 
 # 开放端口（如果有）
 EXPOSE 8081
